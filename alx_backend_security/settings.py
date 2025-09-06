@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'ip_tracking',
+    'django_ip_geolocation',
 ]
 
 MIDDLEWARE = [
@@ -122,3 +123,19 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# IP Geolocation settings
+IP_GEOLOCATION_SETTINGS = {
+    'BACKEND': 'django_ip_geolocation.backends.IPGeolocationAPI',
+    'BACKEND_API_KEY': 'free',  # Use 'free' for testing
+    'BACKEND_TIMEOUT': 5,
+}
+
+# Cache configuration (required for geolocation caching)
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
+

@@ -8,10 +8,14 @@ class RequestLog(models.Model):
     path = models.CharField(max_length=500)
     method = models.CharField(max_length=10, default='GET')
     user_agent = models.TextField(blank=True, null=True)
+    country = models.CharField(max_length=100, blank=True, null=True)
+    city = models.CharField(max_length=100, blank=True, null=True)
+    region = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
-        return f"{self.ip_address} - {self.path} @ {self.timestamp}"
-    
+        location = f"{self.city}, {self.country}" if self.country else "Unknown location"
+        return f"{self.ip_address} - {self.path} - {location}"
+
     class Meta:
         db_table = 'request_logs'
         ordering = ['-timestamp']
@@ -19,6 +23,8 @@ class RequestLog(models.Model):
             models.Index(fields=['ip_address']),
             models.Index(fields=['timestamp']),
             models.Index(fields=['path']),
+            models.Index(fields=['country']),
+            models.Index(fields=['city']),
         ]
 
 class BlockedIP(models.Model):
