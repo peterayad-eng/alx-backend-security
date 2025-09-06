@@ -139,3 +139,22 @@ CACHES = {
     }
 }
 
+# Add rate limiting settings
+RATELIMIT_ENABLE = True
+RATELIMIT_USE_CACHE = 'default'
+RATELIMIT_CACHE_PREFIX = 'rl:'
+RATELIMIT_VIEW = 'ip_tracking.views.rate_limit_exceeded'
+
+# Rate limit settings (in seconds)
+RATELIMIT_AUTHENTICATED = "10/m"
+RATELIMIT_ANONYMOUS = "5/m"
+
+
+# Cache configuration (if not already set)
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
+
