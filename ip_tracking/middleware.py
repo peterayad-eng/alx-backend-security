@@ -7,15 +7,29 @@ class IPLoggingMiddleware(MiddlewareMixin):
     def process_request(self, request):
         # Get client IP address
         ip_address = self.get_client_ip(request)
-        
+
+        # Block blacklisted IPs
+        if BlockedIP.objects.filter(ip_address= ip_address).exists():
+            return HttpResponseForbidden("Your IP has been blocked.")
+
+        # Store IP temporarily on request object for logging later
+        request._client_ip = ip_address
+
+    def process_response(self, request, response):        
         # Create log entry
-        RequestLog.objects.create(
-            ip_address=ip_address,
-            timestamp=timezone.now(),
-            path=request.path,
-            method=request.method,
-            user_agent=request.META.get('HTTP_USER_AGENT', '')[:500]
-        )
+        try:
+            ip_address = getattr(request, "_client_ip", None)
+            if ip_address:
+                RequestLog.objects.create(
+                    ip_address=ip_address,
+                    timestamp=timezone.now(),
+                    path=request.path,
+                    method=request.method,
+                    user_agent=request.META.get("HTTP_USER_AGENT", "")[:500],
+                )
+        except Exception as e:
+            # Don't crash the app because of logging errors
+            print(f"[IPLoggingMiddleware] Logging failed: {e}")
 
         return response
 
