@@ -43,3 +43,34 @@ class BlockedIP(models.Model):
     def __str__(self):
         return f"{self.ip_address} - {self.reason or 'No reason provided'}"
 
+class SuspiciousIP(models.Model):
+    REASON_CHOICES = [
+        ('high_volume', 'High request volume'),
+        ('sensitive_access', 'Access to sensitive paths'),
+        ('multiple_failures', 'Multiple authentication failures'),
+        ('scanning', 'Port scanning behavior'),
+    ]
+
+    ip_address = models.GenericIPAddressField()
+    reason = models.CharField(max_length=20, choices=REASON_CHOICES)
+    request_count = models.IntegerField(default=0)
+    description = models.TextField(blank=True, null=True)
+    detected_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+    last_offense = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'suspicious_ips'
+        verbose_name = 'Suspicious IP'
+        verbose_name_plural = 'Suspicious IPs'
+        ordering = ['-detected_at']
+        indexes = [
+            models.Index(fields=['ip_address']),
+            models.Index(fields=['detected_at']),
+            models.Index(fields=['is_active']),
+        ]
+        unique_together = ['ip_address', 'reason']
+
+    def __str__(self):
+        return f"{self.ip_address} - {self.get_reason_display()}"
+
